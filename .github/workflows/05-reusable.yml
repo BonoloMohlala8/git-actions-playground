@@ -1,0 +1,56 @@
+# WORKFLOW 5: Reusable Workflows
+# -----------------------------------------------
+# WHAT THIS TEACHES: calling a reusable workflow with uses: at job level,
+#                    passing inputs and secrets, reading outputs back
+# WHEN IT RUNS: manually
+#
+# KEY EXAM CONCEPT: uses: at the JOB level calls a reusable workflow.
+# uses: at the STEP level calls an action. These are different things.
+#
+# Compare:
+#   jobs:
+#     my-job:
+#       uses: org/repo/.github/workflows/file.yml@main  ← reusable WORKFLOW
+#
+#   steps:
+#     - uses: actions/checkout@v4  ← an ACTION (not a workflow)
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Check the deploy-url output — where does it appear in the logs?
+#   2. Change secrets: inherit to explicitly passing secrets: API_TOKEN: ${{ secrets.MY_TOKEN }}
+#   3. Add a second job that calls the same reusable workflow but for production
+
+name: 05 - Reusable Workflows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Regular job that runs first
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set version
+        id: version
+        run: echo "version=1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+  # This job CALLS the reusable workflow — note: uses: is at job level, not step level
+  deploy-staging:
+    needs: build
+    uses: ./.github/workflows/reusable-deploy.yml  # local reusable workflow
+    with:
+      environment: staging
+      version: ${{ needs.build.outputs.version }}
+    secrets: inherit  # passes all secrets from this workflow to the reusable one
+
+  # Read the output from the reusable workflow
+  post-deploy:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show deploy URL
+        run: |
+          echo "App deployed to: ${{ needs.deploy-staging.outputs.deploy-url }}"

@@ -1,0 +1,47 @@
+# WORKFLOW 6: Concurrency and Environments
+# -----------------------------------------------
+# WHAT THIS TEACHES: concurrency groups, cancel-in-progress,
+#                    environment protection rules
+# WHEN IT RUNS: manually (run it twice quickly to see concurrency work)
+#
+# KEY EXAM CONCEPT:
+#   cancel-in-progress: true  → new run CANCELS the current one (good for previews)
+#   cancel-in-progress: false → new run QUEUES and waits (good for production)
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Trigger this workflow twice in quick succession — watch what happens
+#      to the first run in the Actions tab
+#   2. Change cancel-in-progress to true and repeat — different behaviour?
+#   3. Go to repo Settings → Environments — create a "production" environment
+#      and add a required reviewer. Then trigger this workflow — what happens?
+
+name: 06 - Concurrency
+
+on:
+  workflow_dispatch:
+
+# Concurrency at workflow level — applies to all jobs
+concurrency:
+  group: deploy-${{ github.ref }}  # one group per branch
+  cancel-in-progress: false        # queue new runs, don't cancel current
+
+jobs:
+  simulate-long-deploy:
+    runs-on: ubuntu-latest
+    environment: production  # links to a GitHub Environment (Settings → Environments)
+                             # if the environment has protection rules, they apply here
+    steps:
+      - name: Start deployment
+        run: |
+          echo "Starting deployment at $(date)"
+          echo "Run number: ${{ github.run_number }}"
+
+      - name: Simulate work (takes 30 seconds)
+        run: |
+          for i in {1..6}; do
+            echo "Working... step $i/6"
+            sleep 5
+          done
+
+      - name: Finish
+        run: echo "Deployment complete at $(date)"

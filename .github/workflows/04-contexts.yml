@@ -1,0 +1,71 @@
+# WORKFLOW 4: Contexts and Step Outputs
+# -----------------------------------------------
+# WHAT THIS TEACHES: github context, steps context, GITHUB_OUTPUT,
+#                    GITHUB_ENV, needs context, job outputs
+# WHEN IT RUNS: manually
+#
+# KEY EXAM CONCEPT: data flows differently at each level:
+#   Step → Step (same job):  use $GITHUB_OUTPUT and steps.ID.outputs.NAME
+#   Job → Job:               expose as job output, read via needs.JOB.outputs.NAME
+#   Anywhere:                github context (github.sha, github.ref, etc.)
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Add a fourth job that uses the version from job 2
+#   2. Try using steps.generate.outputs.version in job 3 — what happens? Why?
+#   3. Add an if: condition to job 3 that only runs on the main branch
+
+name: 04 - Contexts and Outputs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # JOB 1: Show what the github context contains
+  show-context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print github context values
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch/ref: ${{ github.ref }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Actor (who triggered): ${{ github.actor }}"
+          echo "Event that triggered: ${{ github.event_name }}"
+          echo "Run number: ${{ github.run_number }}"
+
+  # JOB 2: Generate a value in one step, use it in another, then expose as job output
+  pass-data:
+    runs-on: ubuntu-latest
+    # Job outputs — this makes the value available to OTHER jobs via needs context
+    outputs:
+      version: ${{ steps.generate.outputs.version }}
+
+    steps:
+      - name: Generate a version string
+        id: generate   # id is required to reference this step's outputs
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+
+      # This step is in the SAME job, so it can read from steps context
+      - name: Use version in same job
+        run: |
+          echo "Using version: ${{ steps.generate.outputs.version }}"
+
+      # Set an environment variable that persists for the rest of THIS job
+      - name: Set env var for rest of job
+        run: echo "APP_ENV=staging" >> $GITHUB_ENV
+
+      - name: Read the env var
+        run: echo "Environment is: $APP_ENV"  # available because of GITHUB_ENV above
+
+  # JOB 3: Read the job output from job 2 via the needs context
+  use-version:
+    runs-on: ubuntu-latest
+    needs: pass-data  # must declare dependency to access outputs
+    steps:
+      - name: Use version from previous job
+        run: |
+          echo "Version from job 2: ${{ needs.pass-data.outputs.version }}"
+          echo "This came through job outputs, not steps context"

@@ -1,0 +1,55 @@
+# WORKFLOW 2: Artifacts
+# -----------------------------------------------
+# WHAT THIS TEACHES: upload-artifact, download-artifact,
+#                    passing files between jobs, failure() condition
+# WHEN IT RUNS: manually (click "Run workflow" in Actions tab)
+#
+# KEY EXAM CONCEPT: artifacts persist after a run and can be
+# downloaded by humans OR by other jobs in the same workflow
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Go to the Actions tab, find this run, scroll down — you'll see
+#      the artifact "test-report" available to download. Click it.
+#   2. Change `if: always()` to `if: failure()` — what changes?
+#   3. Add a third job that downloads the artifact and prints its contents
+
+name: 02 - Artifacts
+
+on:
+  workflow_dispatch: # manual trigger — you click "Run workflow" in GitHub UI
+
+jobs:
+  # JOB 1: Run tests and save a report
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests and save output to file
+        run: |
+          echo "Test run at $(date)" > test-report.txt
+          node src/index.test.js >> test-report.txt 2>&1
+          echo "Exit code: $?" >> test-report.txt
+
+      # Upload the report as an artifact
+      # always() means this runs even if the test step failed
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report        # this is the artifact's name in the UI
+          path: test-report.txt    # this is the file to upload
+          retention-days: 7        # how long GitHub keeps it (default: 90)
+
+  # JOB 2: Download the artifact from job 1 and use it
+  read-report:
+    runs-on: ubuntu-latest
+    needs: run-tests  # WAIT for run-tests to finish first
+    steps:
+      - name: Download test report
+        uses: actions/download-artifact@v4
+        with:
+          name: test-report  # must match the name used in upload
+
+      - name: Print the report
+        run: cat test-report.txt

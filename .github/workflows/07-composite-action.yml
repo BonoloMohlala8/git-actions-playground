@@ -1,0 +1,53 @@
+# WORKFLOW 7: Composite Actions
+# -----------------------------------------------
+# WHAT THIS TEACHES: using a local composite action with uses:,
+#                    reading action outputs via steps context
+# WHEN IT RUNS: manually
+#
+# KEY EXAM CONCEPT: composite actions are called at the STEP level
+# using uses: ./path/to/action (local) or uses: owner/repo@ref (published)
+#
+# The action lives in .github/actions/greet/action.yml
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Look at the action.yml file in .github/actions/greet/
+#      Notice: inputs, outputs, runs: using: composite, steps
+#   2. Add a third step that calls the action again with loud: 'true'
+#   3. What's the difference between this and a reusable workflow?
+#      Answer: this runs at STEP level; reusable workflows run at JOB level
+
+name: 07 - Composite Actions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  use-composite-action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # needed to access local actions
+
+      # Call our local composite action — uses: at STEP level
+      - name: Greet normally
+        id: greet1
+        uses: ./.github/actions/greet  # path to the folder containing action.yml
+        with:
+          name: 'Bonolo'
+          loud: 'false'
+
+      # Read the outputs from the action via steps context
+      - name: Show greeting output
+        run: |
+          echo "Greeting was: ${{ steps.greet1.outputs.greeting }}"
+          echo "Timestamp was: ${{ steps.greet1.outputs.timestamp }}"
+
+      # Call it again with different inputs
+      - name: Greet loudly
+        id: greet2
+        uses: ./.github/actions/greet
+        with:
+          name: 'NTT DATA'
+          loud: 'true'
+
+      - name: Show second greeting
+        run: echo "${{ steps.greet2.outputs.greeting }}"

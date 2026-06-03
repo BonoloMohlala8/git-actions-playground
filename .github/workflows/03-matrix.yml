@@ -1,0 +1,62 @@
+# WORKFLOW 3: Matrix Builds
+# -----------------------------------------------
+# WHAT THIS TEACHES: matrix strategy, fail-fast, include, exclude
+# WHEN IT RUNS: manually
+#
+# KEY EXAM CONCEPT: matrix creates one job per combination.
+# 2 node versions × 2 OS = 4 jobs. Then exclude removes 1 = 3 jobs.
+# Then include adds 1 extra = 4 jobs total.
+#
+# COUNT THE JOBS BEFORE YOU RUN:
+#   node: [18, 20]  ×  os: [ubuntu-latest, windows-latest]  =  4
+#   minus exclude (windows + node 18)                        =  3
+#   plus include (ubuntu + node 22)                          =  4 total
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Check the Actions tab — you should see 4 parallel jobs
+#   2. Change fail-fast to true, then intentionally break a test for node 18
+#      and watch what happens to the other jobs
+#   3. Add a third OS: macos-latest — how many jobs now?
+
+name: 03 - Matrix Builds
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}  # each job uses a different OS from the matrix
+
+    strategy:
+      fail-fast: false  # if one combination fails, others keep running
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [18, 20]
+
+        # exclude removes specific combinations
+        exclude:
+          - os: windows-latest
+            node: 18
+
+        # include adds extra combinations (can also add extra variables)
+        include:
+          - os: ubuntu-latest
+            node: 22
+            experimental: true  # custom variable — use it in steps with ${{ matrix.experimental }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }} on ${{ matrix.os }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Run tests
+        run: node src/index.test.js
+
+      - name: Show environment info
+        run: |
+          echo "Node version: $(node --version)"
+          echo "OS: ${{ matrix.os }}"
+          echo "Experimental: ${{ matrix.experimental }}"

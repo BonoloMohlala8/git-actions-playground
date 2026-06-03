@@ -1,0 +1,35 @@
+# WORKFLOW 1: Basic CI
+# -----------------------------------------------
+# WHAT THIS TEACHES: triggers, jobs, steps, run vs uses
+# WHEN IT RUNS: every push to main or any pull request
+#
+# YOUR TASK AFTER IT RUNS:
+#   1. Make a small change to src/index.js and push — watch this run
+#   2. Change the trigger to only run on push (remove pull_request) — push and observe
+#   3. Add a second step that echoes "Tests complete!" after the test step
+
+name: 01 - Basic CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out your code (uses = calls a pre-built action)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step 3: Run your tests (run = shell command)
+      - name: Run tests
+        run: node src/index.test.js

@@ -1,0 +1,52 @@
+# COMPOSITE ACTION
+# -----------------------------------------------
+# WHAT THIS TEACHES: action.yml structure, composite actions,
+#                    inputs, outputs, runs: using: composite
+#
+# KEY EXAM CONCEPT: this is an ACTION (used at step level with uses:)
+# NOT a reusable workflow (used at job level with uses:)
+#
+# Composite actions group STEPS together into one reusable unit.
+# They live in their own folder with an action.yml file.
+
+name: 'Greet and Report'
+description: 'A composite action that greets someone and reports the time'
+
+# Inputs this action accepts
+inputs:
+  name:
+    description: 'Name to greet'
+    required: true
+    default: 'World'
+  loud:
+    description: 'Whether to shout the greeting'
+    required: false
+    default: 'false'
+
+# Outputs this action exposes back to the calling workflow
+outputs:
+  greeting:
+    description: 'The greeting that was used'
+    value: ${{ steps.build-greeting.outputs.greeting }}
+  timestamp:
+    description: 'When the greeting was made'
+    value: ${{ steps.build-greeting.outputs.timestamp }}
+
+# Composite actions use `using: composite` and have steps
+runs:
+  using: composite
+  steps:
+    - name: Build greeting
+      id: build-greeting
+      shell: bash
+      run: |
+        if [ "${{ inputs.loud }}" == "true" ]; then
+          GREETING="HELLO, ${{ inputs.name }}!!!"
+        else
+          GREETING="Hello, ${{ inputs.name }}!"
+        fi
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        echo "greeting=$GREETING" >> $GITHUB_OUTPUT
+        echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+        echo "$GREETING"
+        echo "Time: $TIMESTAMP"
