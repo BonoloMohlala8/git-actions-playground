@@ -49,7 +49,7 @@ jobs:
       - name: Download test report
         uses: actions/download-artifact@v4
         with:
-          name: test-reportc# must match the name used in upload
+          name: test-report #must match the name used in upload
         
       - name: Print the report
         run: cat test-report.txt 
