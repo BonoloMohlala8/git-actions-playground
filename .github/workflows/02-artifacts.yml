@@ -34,7 +34,7 @@ jobs:
       # Upload the report as an artifact
       # always() means this runs even if the test step failed
       - name: Upload test report
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-report        # this is the artifact's name in the UI
