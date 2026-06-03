@@ -49,12 +49,7 @@ jobs:
       - name: Download test report
         uses: actions/download-artifact@v4
         with:
-          name: test-report  # must match the name used in upload
-          
-# this job prints the  report and needs job 2 to execute
-  print-report: 
-    runs-on: ubuntu-latest
-    needs: read-report
-    steps: 
-        - name: Print the report
-          run: cat test-report.txt
+          name: test-reportc# must match the name used in upload
+        
+      - name: Print the report
+        run: cat test-report.txt 
