@@ -13,7 +13,6 @@ name: 01 - Basic CI
 on:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
   test:
@@ -33,3 +32,6 @@ jobs:
       # Step 3: Run your tests (run = shell command)
       - name: Run tests
         run: node src/index.test.js
+
+      - name: Complete Tests
+        run: echo "::notice::test complete!"
