@@ -1,4 +1,5 @@
 # WORKFLOW 4: Contexts and Step Outputs
+
 # -----------------------------------------------
 # WHAT THIS TEACHES: github context, steps context, GITHUB_OUTPUT,
 #                    GITHUB_ENV, needs context, job outputs
