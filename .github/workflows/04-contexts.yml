@@ -57,8 +57,6 @@ jobs:
       - name: Set env var for rest of job
         run: echo "APP_ENV=staging" >> $GITHUB_ENV
 
-      - name: Read the env var
-        run: echo "Environment is: $APP_ENV"  # available because of GITHUB_ENV above
 
   # JOB 3: Read the job output from job 2 via the needs context
   use-version:
