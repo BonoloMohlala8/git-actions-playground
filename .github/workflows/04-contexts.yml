@@ -1,5 +1,4 @@
 # WORKFLOW 4: Contexts and Step Outputs
-
 # -----------------------------------------------
 # WHAT THIS TEACHES: github context, steps context, GITHUB_OUTPUT,
 #                    GITHUB_ENV, needs context, job outputs
@@ -18,7 +17,7 @@
 name: 04 - Contexts and Outputs
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   # JOB 1: Show what the github context contains
