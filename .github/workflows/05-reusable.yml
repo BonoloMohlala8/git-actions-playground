@@ -38,19 +38,20 @@ jobs:
         run: echo "version=1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
   # This job CALLS the reusable workflow — note: uses: is at job level, not step level
-  deploy-staging:
+  deploy-production:
     needs: build
     uses: ./.github/workflows/reusable-deploy.yml  # local reusable workflow
     with:
-      environment: staging
+      environment: production
       version: ${{ needs.build.outputs.version }}
-    secrets: inherit  # passes all secrets from this workflow to the reusable one
+    secrets: 
+      API_TOKEN: I ${{secrets.MY_TOKEN}} # passes all secrets from this workflow to the reusable one
 
   # Read the output from the reusable workflow
   post-deploy:
-    needs: deploy-staging
+    needs: deploy-production
     runs-on: ubuntu-latest
     steps:
       - name: Show deploy URL
         run: |
-          echo "App deployed to: ${{ needs.deploy-staging.outputs.deploy-url }}"
+          echo "App deployed to: ${{ needs.deploy-production.outputs.deploy-url }}"
