@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false  # if one combination fails, others keep running
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest,macos-latest]
         node: [18, 20]
 
         # exclude removes specific combinations
@@ -42,7 +42,8 @@ jobs:
         include:
           - os: ubuntu-latest
             node: 22
-            experimental: true  # custom variable — use it in steps with ${{ matrix.experimental }}
+            experimental: true # custom variable — use it in steps with ${{ matrix.experimental }}
+  
 
     steps:
       - uses: actions/checkout@v4
